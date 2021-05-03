@@ -1,2 +1,2 @@
 # Earthshaker
-Arduino Leonardo Firmware for Earthshaker PCB
+Arduino Leonardo Firmware and Game Utility Script for Earthshaker PCB
