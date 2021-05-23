@@ -12,6 +12,8 @@ const int disablePin = 3;
 
 const int delayTime = 20;
 boolean startBlock = 0;
+boolean enableState;
+boolean prevEnState;
 
 unsigned long periodoSum = 0;
 unsigned long periodoIst = 0;
@@ -96,7 +98,7 @@ if (millis()-digitalInput[0].dbTime > delayTime && digitalRead(digitalInput[0].p
 void freqBlock(){
 periodoSum = 0;  
 samplesm = samples;
-for(unsigned int i=0; i<samples; i++){
+for(int i=0; i<samples; i++){
   periodoIst = pulseIn(HSyncPin,HIGH);
   if(periodoIst < 100 && periodoIst > 10){
     periodoSum += periodoIst;
@@ -106,10 +108,11 @@ for(unsigned int i=0; i<samples; i++){
   }
   periodoMedio = (periodoSum/samplesm)+5;
 }
-if(periodoMedio>55){ //15KHz
-  digitalWrite(disablePin, LOW); //ENABLE
-}
-else {
-  digitalWrite(disablePin, HIGH);//DISABLE
+//Serial.println(periodoMedio);
+if(periodoMedio > 55){enableState = 1;}
+else {enableState = 0;}
+if (enableState != prevEnState){
+  prevEnState = enableState;
+  digitalWrite(disablePin, !enableState);
 }
 }
