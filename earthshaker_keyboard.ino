@@ -15,10 +15,13 @@ boolean startBlock = 0;
 boolean enableState;
 boolean prevEnState;
 
-unsigned long periodoSum = 0;
-unsigned long periodoIst = 0;
-unsigned long periodoMedio=0;
-int samplesm;
+//31KHz  -> 32 us
+//25KHz -> 40 us
+//15KHz -> 66 us
+int periodSum;
+int periodIst;
+int periodAWG;
+int sCounter;
 const int samples = 10;
 
 struct digitalInput {const byte pin; boolean state; unsigned long dbTime; const byte key; const byte key_shift;} 
@@ -96,23 +99,22 @@ if (millis()-digitalInput[0].dbTime > delayTime && digitalRead(digitalInput[0].p
 //25KHz -> 40 us
 //15KHz -> 66 us
 void freqBlock(){
-periodoSum = 0;  
-samplesm = samples;
-for(int i=0; i<samples; i++){
-  periodoIst = pulseIn(HSyncPin,HIGH);
-  if(periodoIst < 100 && periodoIst > 10){
-    periodoSum += periodoIst;
-  } 
-  else {
-    samplesm--;
+periodIst = pulseIn(HSyncPin,HIGH);//time (in us) between a high and low pulse (negtive sync, 5% duty cicle)
+  periodSum = periodSum + periodIst;
+  sCounter++;
+  if(sCounter > samples){
+    periodAWG = (periodSum/sCounter);
+    periodSum = 0;
+    sCounter = 0;
+    if(periodAWG > 55){
+      enableState = 1;
+    }
+    else {
+      enableState = 0;
+    }
+    if (enableState != prevEnState){//take action on state change only
+      prevEnState = enableState;
+      digitalWrite(disablePin, !enableState);
+    }
   }
-  periodoMedio = (periodoSum/samplesm)+5;
-}
-//Serial.println(periodoMedio);
-if(periodoMedio > 55){enableState = 1;}
-else {enableState = 0;}
-if (enableState != prevEnState){
-  prevEnState = enableState;
-  digitalWrite(disablePin, !enableState);
-}
 }
